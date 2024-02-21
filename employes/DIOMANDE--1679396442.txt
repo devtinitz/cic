@@ -1,0 +1,11 @@
+ACTIONS A EFFECTUER GOA:
+
+-Reporting PDF (Transaction management): Rajouter le nombre de produits commandés dans chaque facture et le nom du client
+
+-Show de Lot (erreur warning a corriger)
+
+-Warehouse inventory warehouse (erreur datatable a corriger)
+
+-Ajouter l'heure dans les date de invoice
+
+-Compte caisse qui 'arrive pas a afficher les clients (Vérifier restriction des comptes caisse)
