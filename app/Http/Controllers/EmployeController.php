@@ -11,10 +11,12 @@ use App\Models\Agence;
 use App\Models\Service;
 use App\Models\Siege;
 use App\Models\Presence;
+use App\Models\Presencecic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use \Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class EmployeController extends Controller
 {
@@ -341,7 +343,18 @@ class EmployeController extends Controller
         $weekStartDate = $now->startOfWeek()->format('Y-m-d H:i:s');
         $weekEndDate = $now->endOfWeek()->format('Y-m-d H:i:s');
 
-        $presences = Presence::where('personId', $data['employe']->person_id)->whereYear('date', date('Y'))->get();
+        $presences = Presencecic::select(
+            'authDate',
+            DB::raw('MIN(authDateTime) as first_scan'),
+            DB::raw('MAX(authDateTime) as last_scan'),
+            'employe_id',
+            DB::raw('MAX(deviceName) as deviceName'),
+            DB::raw('MAX(personName) as personName'),
+        )
+        ->where('employe_id', $data['employe']->person_id)
+        ->whereYear('authDate', date('Y'))
+        ->groupBy('authDate', 'employe_id')
+        ->get();
 
         $days = ['1', '2', '3', '4', '5', '6', '7'];
         $mois = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
@@ -351,7 +364,7 @@ class EmployeController extends Controller
         $q = [];
         foreach ($days as $key => $value) {
             foreach ($presences as $p){
-                if (Carbon::parse($p->date)->dayOfWeek == $value && (Carbon::parse($p->date) >= $weekStartDate && Carbon::parse($p->date) <= $weekEndDate)) {
+                if (Carbon::parse($p->authDate)->dayOfWeek == $value && (Carbon::parse($p->authDate) >= $weekStartDate && Carbon::parse($p->authDate) <= $weekEndDate)) {
                     $q[$k] = $p;
                     $k++;
                 }
@@ -365,7 +378,7 @@ class EmployeController extends Controller
         $x = [];
         foreach ($mois as $key => $value) {
             foreach ($presences as $p){
-                if (date('m', strtotime($p->date)) == $value) {
+                if (date('m', strtotime($p->authDate)) == $value) {
                     $x[$l] = $p;
                     $l++;
                 }

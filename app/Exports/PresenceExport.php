@@ -18,7 +18,7 @@ class PresenceExport implements FromView
     public function view(): View
     {
         return view('presences.excel', [
-            'presences' => $this->presence->orderByDesc('date')->get()
+            'presences' => $this->presence->get()
         ]);
     }
 }

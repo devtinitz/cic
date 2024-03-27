@@ -13,8 +13,9 @@ use App\Models\Departement;
 use App\Models\Service;
 use App\Exports\PresenceExport;
 use App\Imports\PresenceImport;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Models\Presencecic;
 use PDF;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PresenceController extends Controller{
 
@@ -31,7 +32,7 @@ class PresenceController extends Controller{
     public function index(){
         $data['title'] = "Liste des pointages - ";
         $data['section_title'] = "Liste des pointages";
-        $data['presences'] = Presence::orderByDesc('date')->paginate(100);
+        $data['presences'] = Presencecic::orderByDesc('authDate')->paginate(100);
 
         //For activity
         $module = 'Presence';
@@ -62,20 +63,55 @@ class PresenceController extends Controller{
         return view('presences.liste', $data);
     }
 
+    public function pointage(){
+        $data['title'] = "Liste des pointages - ";
+        $data['section_title'] = "Liste des pointages";
+        $data['presences'] = Presencecic::select(
+                                'authDate',
+                                DB::raw('MIN(authDateTime) as first_scan'),
+                                DB::raw('MAX(authDateTime) as last_scan'),
+                                'employe_id',
+                                DB::raw('MAX(deviceName) as deviceName'),
+                                DB::raw('MAX(personName) as personName'),
+                            )
+                            ->groupBy('authDate', 'employe_id')
+                            ->orderByDesc('last_scan')
+                            ->paginate(100);
+
+
+        //For activity
+        $module = 'Presence';
+        $action = " a consulté la liste des présences." ;
+        Activity::saveActivity($module,$action);
+
+        return view('presences.presence', $data);
+    }
+
     public function search(Request $request){
-        $presence = Presence::query();
+        $presence = Presencecic::query();
 
         //dd($request->all());
 
         $request->employe ? $presence = $presence->where('personId', $request->employe) : '';
         $request->departement ? $presence = $presence->whereHas('employe', function ($q) use ($request) { $q->where('departement_id', $request->departement); }) : '';
         $request->service ? $presence = $presence->whereHas('employe', function ($q) use ($request) { $q->where('service_id', $request->service); }) : '';
-        $request->debut ? $presence = $presence->whereDate('date', '>=', $request->debut) : '';
-        $request->fin ? $presence = $presence->whereDate('date', '<=', $request->fin) : '';
+        $request->debut ? $presence = $presence->whereDate('authDate', '>=', $request->debut) : '';
+        $request->fin ? $presence = $presence->whereDate('authDate', '<=', $request->fin) : '';
+
+        $presence = $presence->select(
+            'authDate',
+            DB::raw('MIN(authDateTime) as first_scan'),
+            DB::raw('MAX(authDateTime) as last_scan'),
+            'employe_id',
+            DB::raw('MAX(deviceName) as deviceName'),
+            DB::raw('MAX(personName) as personName'),
+        )
+        ->groupBy('authDate', 'employe_id')
+        ->orderByDesc('last_scan');
 
         //Exportation de donnees en pdf
         if ($request->export){
-            $data['presences'] =$presence->orderByDesc('date')->get();
+            $data['presences'] = $presence->get();
             $data['total'] = $data['presences']->count();
             $pdf = PDF::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
                 ->setPaper('a4', 'landscape')
@@ -89,7 +125,7 @@ class PresenceController extends Controller{
             return Excel::download(new PresenceExport($presence), 'presences.xlsx');
         }
 
-        $data['presences'] = $presence->orderByDesc('date')->paginate(100)->withQueryString();
+        $data['presences'] = $presence->paginate(100)->withQueryString();
 
         //For activity
         $module = 'Presence';
@@ -98,21 +134,7 @@ class PresenceController extends Controller{
 
         $data['title'] = "Liste des pointages - ";
         $data['section_title'] = "Résultats de la recherche";
-        return view('presences.index', $data);
-    }
-
-    public function searchPresence(Request $request){
-        $data['title'] = "Liste des présences - ";
-        $data['section_title'] = "Liste des présences";
-        $data['presences'] = Presence::orderBy('created_at')->get()
-            ->groupBy('authDate');
-
-        //For activity
-        $module = 'Presence';
-        $action = " a consulté la liste des pointages." ;
-        Activity::saveActivity($module,$action);
-
-        return view('presences.liste', $data);
+        return view('presences.presence', $data);
     }
 
     public function import(Request $request){

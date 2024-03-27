@@ -102,7 +102,7 @@ class Employe extends Model{
     }
 
     public function presences(){
-        return $this->hasMany(Presence::class, 'employe_id', 'id');
+        return $this->hasMany(Presencecic::class, 'employe_id', 'id');
     }
 
 
