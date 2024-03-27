@@ -12,7 +12,7 @@
         <a href="#" class="account-menu-item  h-modal-trigger" data-modal="searchPresence">
             <i class="lnil lnil-search"></i>
     
-            <span>Rechercher de pointages</span>
+            <span>Rechercher de pointages </span>
         </a>
     </div>
 </div>

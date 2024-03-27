@@ -26,6 +26,7 @@ class Presencecic extends Model
         'cardNo'
     ];
 
+    //
     public function employe()
     {
         return $this->belongsTo(Employe::class, 'employe_id', 'id');

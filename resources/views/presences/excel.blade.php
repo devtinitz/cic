@@ -15,7 +15,7 @@
         @php
             $temp = 0;
             $duree = 0;
-            // On convertie les heures de début et de fin de pointage en objets Carbon
+            // On convertie les heures de début et de fin de pointage en objets Carbon..
             $heureDebutPointage = \Carbon\Carbon::parse(date('H:i:s', strtotime($presence->first_scan)));
             $heureFinPointage = \Carbon\Carbon::parse(date('H:i:s', strtotime($presence->last_scan)));
 

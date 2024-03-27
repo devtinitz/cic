@@ -7,7 +7,7 @@
             border-collapse: collapse;
             width: 100%;
             font-size: 10px;
-            margin-top: 20px;
+            margin-top: 20px; 
         }
 
         #customers td, #customers th {
@@ -101,8 +101,6 @@
         @foreach ($presenceChunks as $presences)
             @foreach($presences as $presence)
             @php
-
-            
                 $temp = 0;
                 $duree = 0;
                 // On convertie les heures de début et de fin de pointage en objets Carbon

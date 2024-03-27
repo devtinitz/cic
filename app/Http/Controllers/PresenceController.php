@@ -90,7 +90,7 @@ class PresenceController extends Controller{
     public function search(Request $request){
         $presence = Presencecic::query();
 
-        //dd($request->all());
+        //dd($request->all())
 
         $request->employe ? $presence = $presence->where('personId', $request->employe) : '';
         $request->departement ? $presence = $presence->whereHas('employe', function ($q) use ($request) { $q->where('departement_id', $request->departement); }) : '';

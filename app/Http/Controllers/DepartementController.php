@@ -254,7 +254,7 @@ class DepartementController extends Controller
             $pres[] = count($q);
             $q = [];
         }
-
+        
         //Pour les presences du mois
         $l = 0;
         $x = [];
