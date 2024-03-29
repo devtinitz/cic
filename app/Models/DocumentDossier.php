@@ -11,7 +11,6 @@ class DocumentDossier extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    use Searchable;
 
     protected $fillable = ['created_by', 'dossier_employe_id'];
 

@@ -1,7 +1,7 @@
-<table  id="example" class="" style="width:100%">
+<table>
     <thead>
-    <tr class="table100-head">
-        <th>Date</td>
+    <tr>
+        <th>Date</th>
         <th>Employé</th>
         <th>Direction</th>
         <th>Arrivée</th>
@@ -42,7 +42,7 @@
             // Formatage du temps supplémentaire
             $tempSup = $tempsSupplementaire;
         @endphp
-         <tr style="{{ $duree === 0 ? 'background:#ff00008c;color:#fff' : '' }}">
+         <tr>
             <td>{{ date('d/m/Y', strtotime($presence->authDate)) }}</td>
             <td>{{ ucfirst($presence->personName ?? '') }}</td>
             <td>{{ ucfirst($presence->deviceName ?? '') }}</td>

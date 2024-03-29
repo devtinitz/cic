@@ -71,21 +71,21 @@
 <table class="header" cellpadding="0" border="1" style="border: 0px !important;margin: 0px">
     <tr>
         <td style="width: 15% !important; border: none !important; class="">
-        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path($setting->companylogo))) }}" alt="{{ $setting->companyname }}">
+            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path($setting->companylogo))) }}" alt="{{ $setting->companyname }}">
         </td>
         <td style="width: 100% !important; text-align: center">
             <h2 style="text-align: center">LISTE DES PRESENCES</h2>
         </td>
     </tr>
 </table>
-<div class="logo" style="margin-top: 20px">
+{{-- <div class="logo" style="margin-top: 20px">
     <span style="">Date : {{ date('d/m/Y') }}</span>
     <span style="position: absolute; right: 0"><strong>Total :</strong>{{ $total }}</span>
-</div>
+</div> --}}
 <table id="customers" style="width: 100%">
     <thead>
-        <tr class="table100-head">
-            <th>Date</td>
+        <tr class="">
+            <th>Date</th>
             <th>Employé</th>
             <th>Direction</th>
             <th>Arrivée</th>
@@ -95,10 +95,6 @@
         </tr>
         </thead>
         <tbody>
-        @php
-            $presenceChunks = $presences->chunk(500);
-        @endphp
-        @foreach ($presenceChunks as $presences)
             @foreach($presences as $presence)
             @php
                 $temp = 0;
@@ -145,7 +141,6 @@
                     <td>{{ $tempSup.' min' }}</td>
                 </tr>
             @endforeach
-        @endforeach
     </tbody>
 </table>
 

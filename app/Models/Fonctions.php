@@ -21,11 +21,6 @@ class Fonctions extends Model
     {
         return $this->belongsTo(Siege::class);
     }
-
-    public function histoEmployes()
-    {
-        return $this->hasMany(HistoEmploye::class);
-    }
     
     public function employes()
     {

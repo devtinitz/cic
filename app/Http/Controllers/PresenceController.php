@@ -13,7 +13,10 @@ use App\Models\Departement;
 use App\Models\Service;
 use App\Exports\PresenceExport;
 use App\Imports\PresenceImport;
+use App\Jobs\GeneratePdf;
 use App\Models\Presencecic;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Queue;
 use PDF;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -21,7 +24,7 @@ class PresenceController extends Controller{
 
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth')->except('exportToPdf');
         View::share( 'menu', 'Presence' );
         View::share( 'sousmenu', 'presence' );
         View::share('employes', Employe::all());
@@ -88,30 +91,27 @@ class PresenceController extends Controller{
     }
 
     public function search(Request $request){
-        $presence = Presencecic::query();
-
-        //dd($request->all())
-
-        $request->employe ? $presence = $presence->where('personId', $request->employe) : '';
-        $request->departement ? $presence = $presence->whereHas('employe', function ($q) use ($request) { $q->where('departement_id', $request->departement); }) : '';
-        $request->service ? $presence = $presence->whereHas('employe', function ($q) use ($request) { $q->where('service_id', $request->service); }) : '';
-        $request->debut ? $presence = $presence->whereDate('authDate', '>=', $request->debut) : '';
-        $request->fin ? $presence = $presence->whereDate('authDate', '<=', $request->fin) : '';
-
-        $presence = $presence->select(
-            'authDate',
-            DB::raw('MIN(authDateTime) as first_scan'),
-            DB::raw('MAX(authDateTime) as last_scan'),
-            'employe_id',
-            DB::raw('MAX(deviceName) as deviceName'),
-            DB::raw('MAX(personName) as personName'),
-        )
-        ->groupBy('authDate', 'employe_id')
-        ->orderByDesc('last_scan');
+        $presence = Presencecic::when(!empty($request->employe), fn($q) => $q->where('personId', $request->employe))
+            ->when(!empty($request->departement), fn($q) => $q->whereHas('employe', fn($q) => $q->where('service_id', $request->departement)))
+            ->when(!empty($request->service), fn($q) => $q->whereHas('employe', fn($q) => $q->where('service_id', $request->service)))
+            ->when(!empty($request->debut), fn($q) => $q->whereDate('authDate', '>=', $request->debut))
+            ->when(!empty($request->fin), fn($q) => $q->whereDate('authDate', '>=', $request->fin))
+            ->select(
+                'employe_id',
+                'authDate',
+                DB::raw('MIN(authDateTime) as first_scan'),
+                DB::raw('MAX(authDateTime) as last_scan'),
+                'employe_id',
+                DB::raw('MAX(deviceName) as deviceName'),
+                DB::raw('MAX(personName) as personName'),
+            )
+            ->groupBy('authDate', 'employe_id')
+            ->orderByDesc('last_scan');
 
         //Exportation de donnees en pdf
         if ($request->export){
-            $data['presences'] = $presence->get();
+            $data['presences'] = $presence->cursor();
+            //dd($data);
             $data['total'] = $data['presences']->count();
             $pdf = PDF::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
                 ->setPaper('a4', 'landscape')
@@ -122,7 +122,12 @@ class PresenceController extends Controller{
 
         //Exportation de donnees en excel
         if ($request->excel){
-            return Excel::download(new PresenceExport($presence), 'presences.xlsx');
+            try {
+                return Excel::download(new PresenceExport($presence->cursor()), 'presences.xlsx');
+            } catch (\Exception $e) {
+                // Affichez l'erreur ou enregistrez-la dans les logs
+                dd($e->getMessage());
+            }
         }
 
         $data['presences'] = $presence->paginate(100)->withQueryString();
@@ -196,6 +201,38 @@ class PresenceController extends Controller{
         session()->flash('message', 'Fichier importé avec succès!');
  
          return back();
+    }
+
+
+    //Exportation en pdf
+    public function exportToPdf(Request $request){
+        
+        $presences = Presencecic::when(!empty($request->employe), fn($q) => $q->where('personId', $request->employe))
+            ->when(!empty($request->departement), fn($q) => $q->whereHas('employe', fn($q) => $q->where('service_id', $request->departement)))
+            ->when(!empty($request->service), fn($q) => $q->whereHas('employe', fn($q) => $q->where('service_id', $request->service)))
+            ->when(!empty($request->debut), fn($q) => $q->whereDate('authDate', '>=', $request->debut))
+            ->when(!empty($request->fin), fn($q) => $q->whereDate('authDate', '>=', $request->fin))
+            ->select(
+                'id',
+                'authDate',
+                DB::raw('MIN(authDateTime) as first_scan'),
+                DB::raw('MAX(authDateTime) as last_scan'),
+                'employe_id',
+                DB::raw('MAX(deviceName) as deviceName'),
+                DB::raw('MAX(personName) as personName'),
+            )
+            ->groupBy('authDate', 'id')
+            ->orderByDesc('last_scan')
+            ->get();
+
+
+        $setting = Setting::first();        
+        //Mise en file d'attente
+        GeneratePdf::dispatch($presences, $setting);
+        
+        return response()->json([
+            'success' => true,
+        ]);
     }
 
 }

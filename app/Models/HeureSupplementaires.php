@@ -11,7 +11,6 @@ class HeureSupplementaires extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    use Searchable;
 
     protected $fillable = [
         'date',
@@ -33,6 +32,6 @@ class HeureSupplementaires extends Model
 
     public function employes()
     {
-        return $this->belongsTo(Employes::class);
+        return $this->belongsTo(Employe::class);
     }
 }

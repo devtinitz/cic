@@ -11,7 +11,6 @@ class Conges extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    use Searchable;
 
     protected $fillable = [
         'debut',
@@ -30,11 +29,11 @@ class Conges extends Model
 
     public function employes()
     {
-        return $this->belongsTo(Employes::class);
+        return $this->belongsTo(Employe::class);
     }
 
     public function typeConges()
     {
-        return $this->belongsTo(TypeConges::class);
+        return $this->belongsTo(Typeconge::class);
     }
 }

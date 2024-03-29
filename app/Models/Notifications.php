@@ -11,7 +11,6 @@ class Notifications extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    use Searchable;
 
     protected $fillable = [
         'libelle',

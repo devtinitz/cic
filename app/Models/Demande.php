@@ -11,7 +11,6 @@ class Demande extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    use Searchable;
 
     protected $fillable = [
         'description',
@@ -33,7 +32,7 @@ class Demande extends Model
 
     public function employes()
     {
-        return $this->belongsTo(Employes::class);
+        return $this->belongsTo(Employe::class);
     }
 
     public function typeDemande()

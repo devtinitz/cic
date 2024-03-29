@@ -11,14 +11,10 @@ class Typeevenement extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    use Searchable;
 
     protected $fillable = ['libelle'];
 
     protected $searchableFields = ['*'];
 
-    public function allEvenements()
-    {
-        return $this->hasMany(Evenements::class);
-    }
+    
 }

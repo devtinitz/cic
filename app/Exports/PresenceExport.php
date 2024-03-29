@@ -19,7 +19,7 @@ class PresenceExport implements FromView
     {
         //
         return view('presences.excel', [
-            'presences' => $this->presence->get()
+            'presences' => $this->presence
         ]);
     }
 }

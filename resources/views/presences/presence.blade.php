@@ -17,7 +17,7 @@
                                 <div class="form-head-inner">
                                     <div class="left">
                                         <h3>{{$section_title}}</h3>
-                                        <p><i class="lnil lnil-warning"></i> Cette section est réservée pour afficher la liste des pointages. </p>
+                                        <p><i class="lnil lnil-warning"></i> Cette section est réservée pour afficher la liste des pointages.</p>
                                     </div>
                                     <div class="right">
                                         <div class="buttons">

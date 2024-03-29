@@ -11,7 +11,6 @@ class Feries extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    use Searchable;
 
     protected $fillable = ['libelle', 'date', 'created_by', 'siege_id'];
 

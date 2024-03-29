@@ -11,7 +11,6 @@ class Justifications extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    use Searchable;
 
     protected $fillable = [
         'message',

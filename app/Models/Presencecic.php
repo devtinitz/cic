@@ -14,6 +14,8 @@ class Presencecic extends Model
 {
     use HasFactory;
 
+    //protected $primaryKey = 'employe_id';
+
     protected $fillable = [
         'employe_id',
         'authDateTime',

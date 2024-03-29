@@ -10,4 +10,5 @@ Route::controller(PresenceController::class)->prefix('presences')->group(functio
     Route::get('/pointages/search', 'search')->name('presences.search');
     Route::get('/search', 'searchPresence')->name('presences.search.alt');
     Route::post('/import', 'import')->name('presences.import');
+    Route::get('/export-pdf', 'exportToPdf')->name('presences.pdf');
 });

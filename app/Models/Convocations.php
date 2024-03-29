@@ -11,7 +11,6 @@ class Convocations extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    use Searchable;
 
     protected $fillable = [
         'date',
@@ -29,6 +28,6 @@ class Convocations extends Model
 
     public function employes()
     {
-        return $this->belongsTo(Employes::class);
+        return $this->belongsTo(Employe::class);
     }
 }

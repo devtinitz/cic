@@ -11,7 +11,6 @@ class ComplementJustications extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    use Searchable;
 
     protected $fillable = ['fichier', 'justifications_id'];
 

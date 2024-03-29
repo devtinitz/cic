@@ -11,7 +11,6 @@ class Preavis extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    use Searchable;
 
     protected $fillable = [
         'type_preavis_id',
@@ -30,6 +29,6 @@ class Preavis extends Model
 
     public function employes()
     {
-        return $this->belongsTo(Employes::class);
+        return $this->belongsTo(Employe::class);
     }
 }

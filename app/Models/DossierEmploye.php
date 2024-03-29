@@ -11,7 +11,6 @@ class DossierEmploye extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    use Searchable;
 
     protected $fillable = ['ref', 'created_by', 'employes_id'];
 
@@ -19,7 +18,7 @@ class DossierEmploye extends Model
 
     public function employes()
     {
-        return $this->belongsTo(Employes::class);
+        return $this->belongsTo(Employe::class);
     }
 
     public function documentDossiers()
