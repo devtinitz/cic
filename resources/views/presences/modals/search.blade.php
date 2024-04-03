@@ -1,3 +1,15 @@
+<style>
+    .red{color: red}
+    .blink{
+        animation: blink 2s linear infinite;
+        color : #E56D0C;
+    }
+    @keyframes blink{
+        0%{opacity: 0;}
+        50%{opacity: .5;}
+        100%{opacity: 1;}
+    }
+</style>
 <div id="searchPresence" class="modal h-modal is-big">
     <div class="modal-background h-modal-close"></div>
     <div class="modal-content">
@@ -79,7 +91,7 @@
                                             <div class="control has-icon">
                                                 <div class="switch-bloc no-padding-all">
                                                     <label class="form-switch is-primary">
-                                                        <input type="checkbox" id="checked" name="export" class="is-switch">
+                                                        <input type="checkbox" id="pdfchecked" name="export" class="is-switch">
                                                         <i></i>
                                                     </label>
                                                 </div>
@@ -105,6 +117,15 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="form-group col-md-12 text-center pdfExportMsg" style="margin-bottom : 20px !important; display : none">
+                    <div class="blink">
+                        <span style="font-size: 16px">
+                            Veuillez patienter svp...
+                        </span>
+                    </div>
+                </div>
+            </div>
             <div class="modal-card-foot is-end">
                 <button id="save-button" type="submit" class="button h-button is-primary is-raised" style="background-color: {{$setting->companycolor}}; color : #fff !important;">Valider</button>
             </div>
@@ -122,6 +143,50 @@
                     $('#search_form').attr('target', '');
                 }
             });
+
+            $('#search_form').submit(function(e){
+                if ($("#pdfchecked").prop('checked')) {
+                    e.preventDefault();
+                    console.log('okok')
+                    $.ajax({
+                        url: '/presences/export-pdf',
+                        method: 'GET',
+                        data: $(this).serialize(),
+                        success: function (data) {
+                            checkQueueStatus()
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Une erreur s\'est produite : ', error)
+                        }
+                    })
+                }else{
+                    $('.pdfExportMsg').hide()
+                }
+            })
+
+            function checkQueueStatus() {
+                $.ajax({
+                    url: '/presences/checkqueue',
+                    method: 'GET',
+                    success: function(response) {
+                        var queueSize = response.queueSize;
+
+                        if (queueSize === 0) {
+                            console.log('Queue size 0');
+                            $('.pdfExportMsg').hide();
+                            // Si la file d'attente est terminée, lancez le téléchargement du PDF
+                            window.open('/pdf/merged_presences.pdf', '_blank');
+                        } else {
+                            $('.pdfExportMsg').show();
+                            // Si la file d'attente n'est pas terminée, attendez un peu et vérifiez à nouveau
+                            setTimeout(checkQueueStatus, 5000); // Vérifiez toutes les 5 secondes (ajustez selon vos besoins)
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error while checking queue status:', error);
+                    }
+                });
+            }
         });
     </script>
 @endpush

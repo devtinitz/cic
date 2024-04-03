@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 
 class Presencecic extends Model
 {
@@ -32,5 +33,21 @@ class Presencecic extends Model
     public function employe()
     {
         return $this->belongsTo(Employe::class, 'employe_id', 'id');
+    }
+
+    public function firstScan(){
+        return 'ok';
+    }
+
+    public function scan(){
+        return Presencecic::select(
+            'authDate',
+            DB::raw('MIN(authDateTime) as first_scan'),
+            DB::raw('MAX(authDateTime) as last_scan'),
+            'employe_id',
+        )
+        ->where('authDate', $this->authDate)
+        ->where('employe_id', $this->employe_id)
+        ->first();
     }
 }

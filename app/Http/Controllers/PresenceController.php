@@ -91,34 +91,21 @@ class PresenceController extends Controller{
     }
 
     public function search(Request $request){
-        $presence = Presencecic::when(!empty($request->employe), fn($q) => $q->where('personId', $request->employe))
-            ->when(!empty($request->departement), fn($q) => $q->whereHas('employe', fn($q) => $q->where('service_id', $request->departement)))
+        $presence = Presencecic::when(!empty($request->employe), fn($q) => $q->where('employe_id', $request->employe))
+            ->when(!empty($request->departement), fn($q) => $q->whereHas('employe', fn($q) => $q->where('departement_id', $request->departement)))
             ->when(!empty($request->service), fn($q) => $q->whereHas('employe', fn($q) => $q->where('service_id', $request->service)))
             ->when(!empty($request->debut), fn($q) => $q->whereDate('authDate', '>=', $request->debut))
-            ->when(!empty($request->fin), fn($q) => $q->whereDate('authDate', '>=', $request->fin))
+            ->when(!empty($request->fin), fn($q) => $q->whereDate('authDate', '<=', $request->fin))
             ->select(
-                'employe_id',
                 'authDate',
                 DB::raw('MIN(authDateTime) as first_scan'),
                 DB::raw('MAX(authDateTime) as last_scan'),
                 'employe_id',
-                DB::raw('MAX(deviceName) as deviceName'),
-                DB::raw('MAX(personName) as personName'),
+                'deviceName',
+                'personName',
             )
             ->groupBy('authDate', 'employe_id')
             ->orderByDesc('last_scan');
-
-        //Exportation de donnees en pdf
-        if ($request->export){
-            $data['presences'] = $presence->cursor();
-            //dd($data);
-            $data['total'] = $data['presences']->count();
-            $pdf = PDF::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
-                ->setPaper('a4', 'landscape')
-                ->loadView('presences.pdf', $data);
-            $name = "presences.pdf";
-            return $pdf->stream($name);
-        }
 
         //Exportation de donnees en excel
         if ($request->excel){
@@ -207,32 +194,37 @@ class PresenceController extends Controller{
     //Exportation en pdf
     public function exportToPdf(Request $request){
         
-        $presences = Presencecic::when(!empty($request->employe), fn($q) => $q->where('personId', $request->employe))
-            ->when(!empty($request->departement), fn($q) => $q->whereHas('employe', fn($q) => $q->where('service_id', $request->departement)))
-            ->when(!empty($request->service), fn($q) => $q->whereHas('employe', fn($q) => $q->where('service_id', $request->service)))
-            ->when(!empty($request->debut), fn($q) => $q->whereDate('authDate', '>=', $request->debut))
-            ->when(!empty($request->fin), fn($q) => $q->whereDate('authDate', '>=', $request->fin))
-            ->select(
+        $presences = Presencecic::select(
                 'id',
                 'authDate',
                 DB::raw('MIN(authDateTime) as first_scan'),
                 DB::raw('MAX(authDateTime) as last_scan'),
                 'employe_id',
-                DB::raw('MAX(deviceName) as deviceName'),
-                DB::raw('MAX(personName) as personName'),
+                'deviceName',
+                'personName',
             )
-            ->groupBy('authDate', 'id')
+            ->when(!empty($request->employe), fn($q) => $q->where('employe_id', $request->employe))
+            ->when(!empty($request->departement), fn($q) => $q->whereHas('employe', fn($q) => $q->where('departement_id', $request->departement)))
+            ->when(!empty($request->service), fn($q) => $q->whereHas('employe', fn($q) => $q->where('service_id', $request->service)))
+            ->when(!empty($request->debut), fn($q) => $q->whereDate('authDate', '>=', $request->debut))
+            ->when(!empty($request->fin), fn($q) => $q->whereDate('authDate', '<=', $request->fin))
+            ->groupBy('authDate', 'employe_id')
             ->orderByDesc('last_scan')
             ->get();
 
-
-        $setting = Setting::first();        
+            $setting = Setting::first();
         //Mise en file d'attente
         GeneratePdf::dispatch($presences, $setting);
         
         return response()->json([
             'success' => true,
         ]);
+    }
+
+    public function checkQueue(){
+        $queueSize = Queue::size();
+
+        return response()->json(['queueSize' => $queueSize]);
     }
 
 }

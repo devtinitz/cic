@@ -93,9 +93,9 @@
                                                     <td>{{ ucfirst($presence->personName ?? '') }}</td>
                                                     <td>{{ ucfirst($presence->deviceName ?? '') }}</td>
                                                     <td>
-                                                        {{ $presence->first_scan ?? 'Aucun' }}
+                                                        {{ date('H:i:s', strtotime($presence->first_scan)) ?? 'Aucun' }}
                                                     </td>
-                                                    <td>{{ $presence->last_scan ?? 'Aucun' }}</td>
+                                                    <td>{{ date('H:i:s', strtotime($presence->last_scan)) ?? 'Aucun' }}</td>
                                                     <td>{{ $duree.' min'  }}</td>
                                                     <td>{{ $tempSup.' min' }}</td>
                                                 </tr>
