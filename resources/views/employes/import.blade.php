@@ -31,7 +31,7 @@
                                         <div class="field">
                                             <div class="control">
 
-                                                <a href="{{url('public/employe/fichier_model.xlsx')}}" target="_blank">Clique ICI</a>
+                                                <a href="{{url('/employe/employeImport.xlsx')}}" target="_blank">Clique ICI</a>
 
                                             </div>
                                         </div>

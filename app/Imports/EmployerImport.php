@@ -17,15 +17,14 @@ class EmployerImport implements ToModel,WithValidation,WithHeadingRow
     */
     public function model(array $row)
     {
+       // dd($row);
+
         $user = Auth::user();
         $departement=Departement::where('libelle',$row['direction'])->first();
 
-//        return  dd($departement);
-        if ($departement)
-        {
+        if ($departement){
             $depart_id=$departement->id;
-        }else
-        {
+        }else{
             $departement=new Departement();
             $departement->libelle=$row['direction'];
             $departement->created_by=$user->name.' '.$user->prenoms ;
@@ -34,26 +33,24 @@ class EmployerImport implements ToModel,WithValidation,WithHeadingRow
             $depart_id=$departement->id;
         }
 
-//        $contact=str_replace(' ', '', $row['contact']);
-//        if (strlen($contact)!=10)
-//        {
-//            $contact='0'.$contact;
-//        }
-        return new Employe([
+        //On verifie si un employe existe avec personId ou email
+        $employe = Employe::where('person_id', $row['personid'])->orWhere('email', $row['email'])->whereNotNull('email')->first();
+        //dd($employe);
+        if (empty($employe)) {
+            //dd('ok', $row['personid']);
+            Employe::create([
+                'person_id' => $row['personid'] ?? 0,
+                'firstname' => $row['nom'],
+                'lastname' => $row['prenom'] ?? null,
+                'contact' => $row['contact'] ?? null,
+                'email' => $row['email'] ?? null,
+                'civilite' => $row['civilite'] ?? null,
+                'created_by' => $user->email,
+                'departement_id' => $depart_id ?? null,
+                'poste' => $row['fonction'] ?? null,
+            ]);
+        }else dd($employe);
 
-            'firstname'=>$row['nom'],
-            'lastname'=>$row['prenom'],
-            'contact'=>$row['contact'],
-            'email'=>$row['email'],
-            'civilite'=>isset($row['civilite'])?$row['civilite']:'',
-            'created_by'=>$user->email,
-            'departement_id'=>$depart_id,
-            'poste'=>$row['fonction'],
-//            'matricule'=>$row['EMAIL'],
-//            'cnps'=>$row['EMAIL'],
-//            'matricule'=>$row['EMAIL'],
-            //
-        ]);
     }
 
 

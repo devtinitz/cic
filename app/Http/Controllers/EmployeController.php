@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use \Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 
 class EmployeController extends Controller
 {
@@ -404,10 +405,20 @@ class EmployeController extends Controller
             session()->flash('message', "Le fichier est obligatoire!!!");
             return back();
         }
-        $path = $request->file("file")->getRealPath();
-        Excel::import(new EmployerImport, $request->file('file')->store('files'));
-        session()->flash('type', 'is-success');
-        session()->flash('message', "Fichier importé avec succès!");
-        return redirect()->back();
+
+        DB::beginTransaction();
+
+        try{
+            Excel::import(new EmployerImport, $request->file('file'));
+            session()->flash('type', 'is-success');
+            session()->flash('message', "Fichier importé avec succès!");
+            DB::commit();
+            return redirect()->back();
+        }catch (\Exception $e){
+            DB::rollback();
+            session()->flash('type', 'is-danger');
+            session()->flash('message', "Une erreur s\'est produite : " . $e->getMessage());
+            return redirect()->back();
+        }
     }
 }
